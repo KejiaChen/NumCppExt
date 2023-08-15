@@ -19,6 +19,7 @@ void initFilter(pb11::module &m)
     m.def("complementaryMedianFilter1d", &filter::complementaryMedianFilter1d<double>);
     m.def("convolve", &filter::convolve<double>);
     m.def("convolve1d", &filter::convolve1d<double>);
+    m.def("convolve1drt", &filter::convolve1drt<double>);
     m.def("gaussianFilter", &filter::gaussianFilter<double>);
     m.def("gaussianFilter1d", &filter::gaussianFilter1d<double>);
     m.def("laplaceFilter", &filter::laplace<double>);
