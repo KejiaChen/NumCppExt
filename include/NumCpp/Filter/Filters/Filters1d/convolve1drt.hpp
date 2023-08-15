@@ -29,8 +29,6 @@
 
 #include "NumCpp/Core/Slice.hpp"
 #include "NumCpp/Core/Types.hpp"
-#include "NumCpp/Filter/Boundaries/Boundaries1d/addBoundary1d.hpp"
-#include "NumCpp/Filter/Boundaries/Boundary.hpp"
 #include "NumCpp/Functions/dot.hpp"
 #include "NumCpp/Functions/fliplr.hpp"
 #include "NumCpp/NdArray.hpp"
@@ -46,35 +44,29 @@ namespace nc::filter
     ///
     /// @param inImageArray
     /// @param inWeights
-    /// @param inBoundaryType: boundary mode (default Reflect) options (reflect, constant, nearest, mirror, wrap)
-    /// @param inConstantValue: contant value if boundary = 'constant' (default 0)
     /// @return NdArray
     ///
     template<typename dtype>
-    NdArray<dtype> convolve1d(const NdArray<dtype>& inImageArray,
-                              const NdArray<dtype>& inWeights,
-                              Boundary              inBoundaryType  = Boundary::REFLECT,
-                              dtype                 inConstantValue = 0)
+    NdArray<dtype> convolve1drt(const NdArray<dtype>& inImageArray,
+                                const NdArray<dtype>& inWeights)
     {   
         uint32 boundarySize;
-        // if(inBoundaryType == Boundary::REFLECT){
-        //     boundarySize = inWeights.size()-1;
-        // }
-        // else{
-            boundarySize = inWeights.size() / 2; // integer division
-        // }
-        NdArray<dtype> arrayWithBoundary = boundary::addBoundary1d(inImageArray, inBoundaryType, inWeights.size(), inConstantValue);
-        NdArray<dtype> output(1, inImageArray.size());
+        uint32 windowSize;
+        boundarySize = 0;
+        windowSize = inWeights.size();
+        NdArray<dtype> arrayWithBoundary = inImageArray; // no padding on the edge
+        
+        NdArray<dtype> output(1, inImageArray.size()-windowSize+1);
 
         NdArray<dtype> weightsFlat = fliplr(inWeights.flatten());
 
-        const uint32 endPointRow = boundarySize + inImageArray.size();
+        const uint32 endPointRow = output.size();
 
-        for (uint32 i = boundarySize; i < endPointRow; ++i)
+        for (uint32 i = 0; i < endPointRow; ++i)
         {
-            NdArray<dtype> window = arrayWithBoundary[Slice(i - boundarySize, i + boundarySize + 1)].flatten();
+            NdArray<dtype> window = arrayWithBoundary[Slice(i, i+windowSize)].flatten();
 
-            output[i - boundarySize] = dot(window, weightsFlat).item();
+            output[i] = dot(window, weightsFlat).item();
         }
 
         return output;

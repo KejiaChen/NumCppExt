@@ -30,6 +30,8 @@
 #include "NumCpp/Filter/Boundaries/Boundary.hpp"
 #include "NumCpp/Filter/Filters/Filters1d/complementaryMedianFilter1d.hpp"
 #include "NumCpp/Filter/Filters/Filters1d/convolve1d.hpp"
+#include "NumCpp/Filter/Filters/Filters1d/convolve1drt.hpp"
+#include "NumCpp/Filter/Filters/Filters1d/convolve1dsg.hpp"
 #include "NumCpp/Filter/Filters/Filters1d/gaussianFilter1d.hpp"
 #include "NumCpp/Filter/Filters/Filters1d/maximumFilter1d.hpp"
 #include "NumCpp/Filter/Filters/Filters1d/medianFilter1d.hpp"

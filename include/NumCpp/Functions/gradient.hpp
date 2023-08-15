@@ -37,6 +37,7 @@
 #include "NumCpp/Core/Shape.hpp"
 #include "NumCpp/Core/Types.hpp"
 #include "NumCpp/NdArray.hpp"
+#include "NumCpp/Functions/ones_like.hpp"
 
 namespace nc
 {
@@ -49,12 +50,18 @@ namespace nc
     ///
     /// @param inArray
     /// @param inAxis (default ROW)
+    /// @param inTerval (default 1.0 between consecutive steps)
     /// @return NdArray
     ///
     template<typename dtype>
-    NdArray<double> gradient(const NdArray<dtype>& inArray, Axis inAxis = Axis::ROW)
+    NdArray<double> gradient(const NdArray<dtype>& inArray, Axis inAxis = Axis::ROW, NdArray<dtype>& inTerval = {{1.}})
     {
         STATIC_ASSERT_ARITHMETIC(dtype);
+
+        if (inTerval.size() == 1){
+            // reshape
+           inTerval = ones_like<double>(inArray);
+        }
 
         switch (inAxis)
         {
@@ -100,9 +107,11 @@ namespace nc
                 auto returnArray = NdArray<double>(inShape);
                 for (uint32 row = 0; row < inShape.rows; ++row)
                 {
-                    returnArray(row, 0) = static_cast<double>(inArray(row, 1)) - static_cast<double>(inArray(row, 0));
+                    returnArray(row, 0) = (static_cast<double>(inArray(row, 1)) - static_cast<double>(inArray(row, 0)))
+                                          /(static_cast<double>(inTerval(row, 1)) - static_cast<double>(inTerval(row, 0)));
                     returnArray(row, -1) =
-                        static_cast<double>(inArray(row, -1)) - static_cast<double>(inArray(row, -2));
+                        (static_cast<double>(inArray(row, -1)) - static_cast<double>(inArray(row, -2)))
+                                            /(static_cast<double>(inTerval(row, -1)) - static_cast<double>(inTerval(row, -2)));
                 }
 
                 // then rip through the rest of the array
@@ -110,9 +119,9 @@ namespace nc
                 {
                     for (uint32 col = 1; col < inShape.cols - 1; ++col)
                     {
-                        returnArray(row, col) =
-                            (static_cast<double>(inArray(row, col + 1)) - static_cast<double>(inArray(row, col - 1))) /
-                            2.;
+                        // returnArray(row, col) = (static_cast<double>(inArray(row, col + 1)) - static_cast<double>(inArray(row, col - 1))) /2.;
+                        returnArray(row, col) = (static_cast<double>(inArray(row, col + 1)) - static_cast<double>(inArray(row, col - 1))) 
+                                                /(static_cast<double>(inTerval(row, col + 1)) - static_cast<double>(inTerval(row, col - 1)));
                     }
                 }
 
@@ -154,9 +163,14 @@ namespace nc
     /// @return NdArray
     ///
     template<typename dtype>
-    NdArray<std::complex<double>> gradient(const NdArray<std::complex<dtype>>& inArray, Axis inAxis = Axis::ROW)
+    NdArray<std::complex<double>> gradient(const NdArray<std::complex<dtype>>& inArray, Axis inAxis = Axis::ROW, NdArray<std::complex<dtype>>& inTerval = {{1.}})
     {
         STATIC_ASSERT_ARITHMETIC(dtype);
+
+         if (inTerval.size() == 1){
+            // reshape
+           inTerval = ones_like<std::complex<double>>(inArray);
+        }
 
         switch (inAxis)
         {
@@ -202,9 +216,10 @@ namespace nc
                 auto returnArray = NdArray<std::complex<double>>(inShape);
                 for (uint32 row = 0; row < inShape.rows; ++row)
                 {
-                    returnArray(row, 0) = complex_cast<double>(inArray(row, 1)) - complex_cast<double>(inArray(row, 0));
-                    returnArray(row, -1) =
-                        complex_cast<double>(inArray(row, -1)) - complex_cast<double>(inArray(row, -2));
+                    returnArray(row, 0) = (complex_cast<double>(inArray(row, 1)) - complex_cast<double>(inArray(row, 0)))
+                                          /(complex_cast<double>(inTerval(row, 1)) - complex_cast<double>(inTerval(row, 0)));
+                    returnArray(row, -1) =(complex_cast<double>(inArray(row, -1)) - complex_cast<double>(inArray(row, -2)))
+                                          /(complex_cast<double>(inTerval(row, -1)) - complex_cast<double>(inTerval(row, -2)));
                 }
 
                 // then rip through the rest of the array
@@ -214,7 +229,8 @@ namespace nc
                     {
                         returnArray(row, col) = (complex_cast<double>(inArray(row, col + 1)) -
                                                  complex_cast<double>(inArray(row, col - 1))) /
-                                                2.;
+                                                (complex_cast<double>(inTerval(row, col + 1)) -
+                                                 complex_cast<double>(inTerval(row, col - 1)));
                     }
                 }
 

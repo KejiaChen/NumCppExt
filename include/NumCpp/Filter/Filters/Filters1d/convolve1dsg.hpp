@@ -29,7 +29,7 @@
 
 #include "NumCpp/Core/Slice.hpp"
 #include "NumCpp/Core/Types.hpp"
-#include "NumCpp/Filter/Boundaries/Boundaries1d/addBoundary1d.hpp"
+#include "NumCpp/Filter/Boundaries/Boundaries1dsg/addBoundary1dsg.hpp"
 #include "NumCpp/Filter/Boundaries/Boundary.hpp"
 #include "NumCpp/Functions/dot.hpp"
 #include "NumCpp/Functions/fliplr.hpp"
@@ -51,19 +51,15 @@ namespace nc::filter
     /// @return NdArray
     ///
     template<typename dtype>
-    NdArray<dtype> convolve1d(const NdArray<dtype>& inImageArray,
-                              const NdArray<dtype>& inWeights,
-                              Boundary              inBoundaryType  = Boundary::REFLECT,
-                              dtype                 inConstantValue = 0)
+    NdArray<dtype> convolve1dsg(const NdArray<dtype>& inImageArray,
+                                const NdArray<dtype>& inWeights,
+                                Boundary              inBoundaryType  = Boundary::REFLECT,
+                                dtype                 inConstantValue = 0)
     {   
         uint32 boundarySize;
-        // if(inBoundaryType == Boundary::REFLECT){
-        //     boundarySize = inWeights.size()-1;
-        // }
-        // else{
-            boundarySize = inWeights.size() / 2; // integer division
-        // }
-        NdArray<dtype> arrayWithBoundary = boundary::addBoundary1d(inImageArray, inBoundaryType, inWeights.size(), inConstantValue);
+        boundarySize = inWeights.size(); // integer division
+
+        NdArray<dtype> arrayWithBoundary = boundary::addBoundary1dsg(inImageArray, inBoundaryType, inWeights.size(), inConstantValue);
         NdArray<dtype> output(1, inImageArray.size());
 
         NdArray<dtype> weightsFlat = fliplr(inWeights.flatten());
@@ -72,7 +68,7 @@ namespace nc::filter
 
         for (uint32 i = boundarySize; i < endPointRow; ++i)
         {
-            NdArray<dtype> window = arrayWithBoundary[Slice(i - boundarySize, i + boundarySize + 1)].flatten();
+            NdArray<dtype> window = arrayWithBoundary[Slice(i - boundarySize+1, i+1)].flatten();
 
             output[i - boundarySize] = dot(window, weightsFlat).item();
         }

@@ -23,23 +23,44 @@
 /// DEALINGS IN THE SOFTWARE.
 ///
 /// Description
-/// Boundary condition to apply to the image filter
+/// Reflects the boundaries
 ///
 #pragma once
 
-namespace nc::filter
+#include "NumCpp/Core/Internal/StaticAsserts.hpp"
+#include "NumCpp/Core/Slice.hpp"
+#include "NumCpp/Core/Types.hpp"
+#include "NumCpp/Functions/fliplr.hpp"
+#include "NumCpp/NdArray.hpp"
+
+namespace nc::filter::boundary
 {
-    //================================================================================
-    // Enum Description:
-    /// Boundary condition to apply to the image filter
-    enum class Boundary
+    //============================================================================
+    // Method Description:
+    /// Reflects the boundaries
+    ///
+    /// @param inImage
+    /// @param inBoundarySize
+    ///
+    /// @return NdArray
+    ///
+    template<typename dtype>
+    NdArray<dtype> reflect1dsg(const NdArray<dtype>& inImage, uint32 inBoundarySize)
     {
-        REFLECT = 0,
-        CONSTANT,
-        NEAREST,
-        MIRROR,
-        WRAP,
-        VALID,
-        // INTERPOLATE
-    };
-} // namespace nc::filter
+        STATIC_ASSERT_ARITHMETIC(dtype);
+
+        const uint32 outSize = inImage.size() + inBoundarySize;
+
+        NdArray<dtype> outArray(1, outSize);
+        outArray.put(Slice(inBoundarySize, inBoundarySize + inImage.size()), inImage);
+
+        // real-time performance: only add to left side
+        outArray.put(Slice(0, inBoundarySize), fliplr(inImage[Slice(0, inBoundarySize)]));
+
+        // right
+        // outArray.put(Slice(inImage.size() + inBoundarySize, outSize),
+        //              fliplr(inImage[Slice(-static_cast<int32>(inBoundarySize), inImage.size())]));
+
+        return outArray;
+    }
+} // namespace nc::filter::boundary

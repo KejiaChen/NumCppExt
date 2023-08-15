@@ -32,11 +32,11 @@
 #include "NumCpp/Core/Internal/Error.hpp"
 #include "NumCpp/Core/Internal/StaticAsserts.hpp"
 #include "NumCpp/Core/Types.hpp"
-#include "NumCpp/Filter/Boundaries/Boundaries1d/constant1d.hpp"
-#include "NumCpp/Filter/Boundaries/Boundaries1d/mirror1d.hpp"
-#include "NumCpp/Filter/Boundaries/Boundaries1d/nearest1d.hpp"
-#include "NumCpp/Filter/Boundaries/Boundaries1d/reflect1d.hpp"
-#include "NumCpp/Filter/Boundaries/Boundaries1d/wrap1d.hpp"
+// #include "NumCpp/Filter/Boundaries/Boundaries1d/constant1d.hpp"
+// #include "NumCpp/Filter/Boundaries/Boundaries1d/mirror1d.hpp"
+// #include "NumCpp/Filter/Boundaries/Boundaries1d/nearest1d.hpp"
+#include "NumCpp/Filter/Boundaries/Boundaries1dsg/reflect1dsg.hpp"
+// #include "NumCpp/Filter/Boundaries/Boundaries1d/wrap1d.hpp"
 // #include "NumCpp/Filter/Boundaries/Boundaries1d/interpolate1d.hpp"
 #include "NumCpp/Filter/Boundaries/Boundary.hpp"
 #include "NumCpp/NdArray.hpp"
@@ -54,44 +54,42 @@ namespace nc::filter::boundary
     /// @return NdArray
     ///
     template<typename dtype>
-    NdArray<dtype> addBoundary1d(const NdArray<dtype>& inImage,
+    NdArray<dtype> addBoundary1dsg(const NdArray<dtype>& inImage,
                                  Boundary              inBoundaryType,
                                  uint32                inKernalSize,
                                  dtype                 inConstantValue = 0)
     {
         STATIC_ASSERT_ARITHMETIC(dtype);
 
-        if (inKernalSize % 2 == 0)
-        {
-            THROW_INVALID_ARGUMENT_ERROR("input kernal size must be an odd value.");
-        }
-
         switch (inBoundaryType)
         {
             case Boundary::REFLECT:
             {   
-                const uint32 boundarySize = inKernalSize /2; // integer division
-                return reflect1d(inImage, boundarySize);
+                const uint32 boundarySize = inKernalSize; // integer division
+                return reflect1dsg(inImage, boundarySize);
             }
             case Boundary::CONSTANT:
             {
-                const uint32 boundarySize = inKernalSize / 2; // integer division
-                return constant1d(inImage, boundarySize, inConstantValue);
+                const uint32 boundarySize = inKernalSize; // integer division
+                return reflect1dsg(inImage, boundarySize);
             }
             case Boundary::NEAREST:
             {   
-                const uint32 boundarySize = inKernalSize / 2; // integer division
-                return nearest1d(inImage, boundarySize);
+                const uint32 boundarySize = inKernalSize; // integer division
+                // return nearest1d(inImage, boundarySize);
+                return reflect1dsg(inImage, boundarySize);
             }
             case Boundary::MIRROR:
             {   
-                const uint32 boundarySize = inKernalSize / 2; // integer division
-                return mirror1d(inImage, boundarySize);
+                const uint32 boundarySize = inKernalSize; // integer division
+                // return mirror1d(inImage, boundarySize);
+                return reflect1dsg(inImage, boundarySize);
             }
             case Boundary::WRAP:
             {   
-                const uint32 boundarySize = inKernalSize / 2; // integer division
-                return wrap1d(inImage, boundarySize);
+                const uint32 boundarySize = inKernalSize; // integer division
+                // return wrap1d(inImage, boundarySize);
+                return reflect1dsg(inImage, boundarySize);
             }
             // case Boundary::INTERPOLATE:
             // {
